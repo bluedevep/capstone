@@ -6,7 +6,7 @@ from flask_cors import CORS
 
 import jwt
 
-import os
+#import os
 
 app = Flask(__name__)
 #app = Flask(__name__, instance_relative_config=True)
@@ -17,8 +17,9 @@ stripe.api_key = 'sk_test_51O8LOXDOr1batTywZuPQOfPpQwBikQPKiH8HFUwZvxT0klknXHD2k
 app.secret_key = 'sorhouet120274'
 
 
-##CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}}, supports_credentials=True, resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:5000"]}})
-#CORS(app)
+# CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}}, supports_credentials=True, resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:5000"]}})
+# CORS(app)
+# CORS(app, resources={r"*": {"origins": ["http://localhost:3000"]}})
 
 ##to do change this later when deployment
 app.config['SESSION_COOKIE_DOMAIN'] = 'localhost'  # Puedes establecer solo el dominio sin el puerto
@@ -26,11 +27,13 @@ app.config['SESSION_COOKIE_PATH'] = '/'  # Asegúrate de configurar el path corr
 
 # Configurar CORS
 CORS(app, supports_credentials=True, origins='http://localhost:3000')
+# CORS(app, supports_credentials=True, origins='*')
 
-CORS(app, supports_credentials=True)
+# CORS(app, supports_credentials=True)
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.sqlite')
+#basedir = os.path.abspath(os.path.dirname(__file__))
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'app.sqlite')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://iuglmangcjuish:44f13ef6303af59c3b320b9f707988f144308065b64cbb87843e459b645756f0@ec2-34-251-233-253.eu-west-1.compute.amazonaws.com:5432/d9kmqlrggf2hh0'
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
@@ -208,8 +211,19 @@ menu_items_schema = MenuItemSchema(many=True)
 
 # Endpoint to create a new item
 #be careful since in thunder or postman, need "", and not '', false and not False,....
-@app.route('/item', methods=["POST"])
+@app.route('/item', methods=["POST", "OPTIONS"])
+
 def add_item():
+
+    if request.method == "OPTIONS":
+        response = jsonify({'message': 'Preflight request successful'})
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Methods'] = 'POST'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response
+    
+    
+
     post_data = request.get_json()
     name = post_data.get('name') 
     description = post_data.get('description')
@@ -246,7 +260,7 @@ def get_item(id):
 
 # Endpoint for updating a item
 @app.route("/item/<id>", methods=["PUT"])
-def item_update(id):
+def item_total_update(id):
     item = MenuItem.query.get(id)
     name = request.json['name']
     description = request.json['description']
@@ -269,6 +283,22 @@ def item_update(id):
     db.session.commit()
     return menu_item_schema.jsonify(item)
 
+# Endpoint for updating  PARTIALY a item
+@app.route("/item/<id>", methods=["PATCH"])
+def item_partial_update(id):
+    item = MenuItem.query.get(id)
+    if not item:
+        return jsonify({"message": "Item not found"}), 404
+
+    # Recibe el JSON del cuerpo de la solicitud
+    update_data = request.json
+
+    # Itera sobre los campos que se enviaron en la solicitud y actualiza solo esos
+    for field, value in update_data.items():
+        setattr(item, field, value)
+
+    db.session.commit()
+    return menu_item_schema.jsonify(item)
 
 # Endpoint for deleting an item
 @app.route("/item/<id>", methods=["DELETE"])
