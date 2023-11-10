@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
 
-import jwt
+# from flask_jwt import JWT, jwt_required, current_identity
 
 #import os
 
@@ -115,30 +115,30 @@ def login():
     user = User.query.filter_by(username=username, password=password).first()
 
     if user:
-        token = jwt.encode({'username': user.username}, 'sorhouet120274', algorithm='HS256')
-        return jsonify({'message': 'Login successful', 'token': token}), 200
+        # token = jwt.encode({'username': user.username}, 'sorhouet120274', algorithm='HS256')
+        return jsonify({'message': 'Login successful'}), 200
     else:
         return jsonify({'message': 'Invalid credentials'}), 401
 
 #endpoint to verify login
 
-@app.route('/verify_login')
-def verify_login():
-    token = request.headers.get('Authorization')
+# @app.route('/verify_login')
+# def verify_login():
+#     token = request.headers.get('Authorization')
     
-    print('Token received:', token)
+#     print('Token received:', token)
 
-    if not token:
-        return jsonify({'message': 'Token is missing'}), 401
+#     if not token:
+#         return jsonify({'message': 'Token is missing'}), 401
 
-    try:
-        decoded_token = jwt.decode(token, 'sorhouet120274', algorithms=['HS256'])
-        username = decoded_token['username']
-        return jsonify({'message': f'User {username} is logged in'}), 200
-    except jwt.ExpiredSignatureError:
-        return jsonify({'message': 'Token has expired'}), 401
-    except jwt.DecodeError:
-        return jsonify({'message': 'Invalid token'}), 401
+#     try:
+#         decoded_token = jwt.decode(token, 'sorhouet120274', algorithms=['HS256'])
+#         username = decoded_token['username']
+#         return jsonify({'message': f'User {username} is logged in'}), 200
+#     except jwt.ExpiredSignatureError:
+#         return jsonify({'message': 'Token has expired'}), 401
+#     except jwt.DecodeError:
+#         return jsonify({'message': 'Invalid token'}), 401
 
 
 

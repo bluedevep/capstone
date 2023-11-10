@@ -13,6 +13,7 @@ stripe = "*"
 gunicorn = "*"
 psycopg2 = "*"
 flask-jwt = "*"
+waitress = "*"
 
 [dev-packages]
 
