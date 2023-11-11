@@ -102,7 +102,7 @@ def login():
     
     if request.method == "OPTIONS":
         response = jsonify({'message': 'Preflight request successful'})
-        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Allow-Methods'] = 'POST'
         response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
         return response
